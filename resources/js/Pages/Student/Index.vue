@@ -19,6 +19,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import BaseModal from '@/Components/BaseModal.vue';
 import { ref } from 'vue';
 import { parseISO } from 'date-fns';
+import ellipsis from '@/utils/ellipsis';
 
 const props = defineProps<{
   data: PaginatedResult<Student>;
@@ -145,7 +146,7 @@ const handleDelete = (id: number) => {
                 <tr>
                   <th scope="col" class="px-6 py-3">
                     <div
-                      class="flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
                       @click="() => handleSort('nisn')"
                     >
                       NISN
@@ -156,7 +157,7 @@ const handleDelete = (id: number) => {
 
                   <th scope="col" class="px-6 py-3">
                     <div
-                      class="flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
                       @click="() => handleSort('nis')"
                     >
                       NIS
@@ -167,7 +168,7 @@ const handleDelete = (id: number) => {
 
                   <th scope="col" class="px-6 py-3">
                     <div
-                      class="flex items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      class="flex items-center text-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
                       @click="() => handleSort('full_name')"
                     >
                       Nama Lengkap
@@ -178,7 +179,7 @@ const handleDelete = (id: number) => {
 
                   <th scope="col" class="px-6 py-3">
                     <div
-                      class="flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
                       @click="() => handleSort('gender')"
                     >
                       Jenis Kelamin
@@ -189,12 +190,65 @@ const handleDelete = (id: number) => {
 
                   <th scope="col" class="px-6 py-3">
                     <div
-                      class="flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
                       @click="() => handleSort('religion')"
                     >
                       Agama
 
                       <component :is="getSortIcon('religion')" class="w-4" />
+                    </div>
+                  </th>
+
+                  <th scope="col" class="px-6 py-3">
+                    <div
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      @click="() => handleSort('phone_number')"
+                    >
+                      No Telp.
+
+                      <component
+                        :is="getSortIcon('phone_number')"
+                        class="w-4"
+                      />
+                    </div>
+                  </th>
+
+                  <th scope="col" class="px-6 py-3">
+                    <div
+                      class="flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      @click="() => handleSort('email')"
+                    >
+                      E-mail
+
+                      <component :is="getSortIcon('email')" class="w-4" />
+                    </div>
+                  </th>
+
+                  <th scope="col" class="px-6 py-3">
+                    <div
+                      class="flex items-center text-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      @click="() => handleSort('full_address')"
+                    >
+                      Alamat Lengkap
+
+                      <component
+                        :is="getSortIcon('full_address')"
+                        class="w-4"
+                      />
+                    </div>
+                  </th>
+
+                  <th scope="col" class="px-6 py-3">
+                    <div
+                      class="flex items-center text-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
+                      @click="() => handleSort('origin_school')"
+                    >
+                      Asal Sekolah
+
+                      <component
+                        :is="getSortIcon('origin_school')"
+                        class="w-4"
+                      />
                     </div>
                   </th>
 
@@ -228,6 +282,22 @@ const handleDelete = (id: number) => {
 
                   <td class="px-6 py-4 text-center">
                     {{ RELIGION_TRANSLATIONS[student.religion] }}
+                  </td>
+
+                  <td class="px-6 py-4 text-center">
+                    {{ student.phone_number }}
+                  </td>
+
+                  <td class="px-6 py-4 text-center">
+                    {{ student.email ?? '-' }}
+                  </td>
+
+                  <td class="px-6 py-4">
+                    {{ ellipsis(student.full_address, 50) }}
+                  </td>
+
+                  <td class="px-6 py-4">
+                    {{ student.origin_school }}
                   </td>
 
                   <td class="px-6 py-4">

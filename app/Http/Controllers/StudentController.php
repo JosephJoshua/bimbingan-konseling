@@ -17,7 +17,7 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'sort_by' => ['nullable', 'sometimes', 'string', Rule::in(['nis', 'nisn', 'full_name', 'gender', 'religion'])],
+            'sort_by' => ['nullable', 'sometimes', 'string', Rule::in(['nis', 'nisn', 'full_name', 'gender', 'religion', 'phone_number', 'email', 'full_address', 'origin_school'])],
             'sort_direction' => ['nullable', 'sometimes', 'string', Rule::in(['asc', 'desc'])],
             'search' => ['nullable', 'sometimes', 'string'],
         ]);
