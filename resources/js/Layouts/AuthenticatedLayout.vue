@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -8,6 +8,22 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+
+const routes = reactive<{ title: string; href: string; active: boolean }[]>([
+  {
+    title: 'Dashboard',
+    href: route('dashboard'),
+    active: route().current('dashboard'),
+  },
+  {
+    title: 'Daftar Murid',
+    href: route('students.index'),
+    active:
+      route().current('students.index') ||
+      route().current('students.create') ||
+      route().current('students.edit'),
+  },
+]);
 </script>
 
 <template>
@@ -30,10 +46,12 @@ const showingNavigationDropdown = ref(false);
               <!-- Navigation Links -->
               <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                 <NavLink
-                  :href="route('dashboard')"
-                  :active="route().current('dashboard')"
+                  v-for="route in routes"
+                  :key="route.href"
+                  :href="route.href"
+                  :active="route.active"
                 >
-                  Dashboard
+                  {{ route.title }}
                 </NavLink>
               </div>
             </div>
@@ -130,10 +148,12 @@ const showingNavigationDropdown = ref(false);
         >
           <div class="pt-2 pb-3 space-y-1">
             <ResponsiveNavLink
-              :href="route('dashboard')"
-              :active="route().current('dashboard')"
+              v-for="route in routes"
+              :key="route.href"
+              :href="route.href"
+              :active="route.active"
             >
-              Dashboard
+              {{ route.title }}
             </ResponsiveNavLink>
           </div>
 
