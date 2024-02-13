@@ -7,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   EyeIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/vue/24/solid';
 import { Student } from '@/types/student';
 import { PaginatedResult } from '@/types/paginated-result';
@@ -20,15 +21,16 @@ import BaseModal from '@/Components/BaseModal.vue';
 import { ref } from 'vue';
 import { parseISO } from 'date-fns';
 import ellipsis from '@/utils/ellipsis';
+import { WithConsultations } from '@/types/consultation';
 
 const props = defineProps<{
-  data: PaginatedResult<Student>;
+  data: PaginatedResult<WithConsultations<Student>>;
   search: string;
   sort_by: string;
   sort_direction: 'asc' | 'desc';
 }>();
 
-const currentlyViewingStudent = ref<Student | null>(null);
+const currentlyViewingStudent = ref<WithConsultations<Student> | null>(null);
 const deleteForm = useForm({});
 
 const getSortIcon = (column: string) => {
@@ -301,18 +303,33 @@ const handleDelete = (id: number) => {
                   </td>
 
                   <td class="px-6 py-4">
-                    <div class="flex justify-center items-center gap-2">
+                    <div class="flex justify-end items-center gap-2">
                       <ActionButton
                         title="Lihat"
                         @click="() => (currentlyViewingStudent = student)"
                       >
-                        <EyeIcon class="w-4 h-4 text-blue-400" />
+                        <EyeIcon class="w-4 h-4 text-blue-500" />
                       </ActionButton>
+
                       <Link
                         :href="route('students.edit', { student: student.id })"
                       >
                         <ActionButton title="Ubah">
-                          <PencilIcon class="w-4 h-4 text-blue-400" />
+                          <PencilIcon class="w-4 h-4 text-orange-400" />
+                        </ActionButton>
+                      </Link>
+
+                      <Link
+                        :href="
+                          route('students.consultations.create', {
+                            student: student.id,
+                          })
+                        "
+                      >
+                        <ActionButton title="Konsultasi">
+                          <ChatBubbleLeftRightIcon
+                            class="w-4 h-4 text-green-600"
+                          />
                         </ActionButton>
                       </Link>
 
@@ -408,33 +425,33 @@ const handleDelete = (id: number) => {
       :title="currentlyViewingStudent?.full_name ?? ''"
       @close="() => (currentlyViewingStudent = null)"
     >
-      <ul v-if="!!currentlyViewingStudent" class="text-lg">
+      <ul v-if="!!currentlyViewingStudent">
         <li>
-          <span class="font-semibold">ID:</span>
+          <span class="font-medium">ID:</span>
           {{ currentlyViewingStudent.id }}
         </li>
         <li>
-          <span class="font-semibold">NISN:</span>
+          <span class="font-medium">NISN:</span>
           {{ currentlyViewingStudent.nisn }}
         </li>
         <li>
-          <span class="font-semibold">NIS:</span>
+          <span class="font-medium">NIS:</span>
           {{ currentlyViewingStudent.nis }}
         </li>
         <li>
-          <span class="font-semibold">Nama Lengkap:</span>
+          <span class="font-medium">Nama Lengkap:</span>
           {{ currentlyViewingStudent.full_name }}
         </li>
         <li>
-          <span class="font-semibold">Jenis Kelamin:</span>
+          <span class="font-medium">Jenis Kelamin:</span>
           {{ GENDER_TRANSLATIONS[currentlyViewingStudent.gender] }}
         </li>
         <li>
-          <span class="font-semibold">Agama:</span>
+          <span class="font-medium">Agama:</span>
           {{ RELIGION_TRANSLATIONS[currentlyViewingStudent.religion] }}
         </li>
         <li>
-          <span class="font-semibold">Tanggal/Tempat Lahir:</span>
+          <span class="font-medium">Tanggal/Tempat Lahir:</span>
           {{
             parseISO(currentlyViewingStudent.birth_date).toLocaleDateString(
               'id-ID',
@@ -448,44 +465,51 @@ const handleDelete = (id: number) => {
           / {{ currentlyViewingStudent.birth_place }}
         </li>
         <li>
-          <span class="font-semibold">Alamat Lengkap:</span>
+          <span class="font-medium">Alamat Lengkap:</span>
           {{ currentlyViewingStudent.full_address }}
         </li>
         <li>
-          <span class="font-semibold">No. Telp:</span>
+          <span class="font-medium">No. Telp:</span>
           {{ currentlyViewingStudent.phone_number }}
         </li>
         <li>
-          <span class="font-semibold">E-mail:</span>
+          <span class="font-medium">E-mail:</span>
           {{ currentlyViewingStudent.email ?? '-' }}
         </li>
         <li>
-          <span class="font-semibold">Asal Sekolah:</span>
+          <span class="font-medium">Asal Sekolah:</span>
           {{ currentlyViewingStudent.origin_school }}
         </li>
         <li v-if="!!currentlyViewingStudent.father_name">
-          <span class="font-semibold">Nama Ayah:</span>
+          <span class="font-medium">Nama Ayah:</span>
           {{ currentlyViewingStudent.father_name }}
         </li>
         <li v-if="!!currentlyViewingStudent.father_name">
-          <span class="font-semibold">No Telp. Ayah:</span>
+          <span class="font-medium">No Telp. Ayah:</span>
           {{ currentlyViewingStudent.father_phone_number ?? '-' }}
         </li>
         <li v-if="!!currentlyViewingStudent.mother_name">
-          <span class="font-semibold">Nama Ibu:</span>
+          <span class="font-medium">Nama Ibu:</span>
           {{ currentlyViewingStudent.mother_name }}
         </li>
         <li v-if="!!currentlyViewingStudent.mother_name">
-          <span class="font-semibold">No Telp. Ibu:</span>
+          <span class="font-medium">No Telp. Ibu:</span>
           {{ currentlyViewingStudent.mother_phone_number ?? '-' }}
         </li>
         <li v-if="!!currentlyViewingStudent.guardian_name">
-          <span class="font-semibold">Nama Wali:</span>
+          <span class="font-medium">Nama Wali:</span>
           {{ currentlyViewingStudent.guardian_name }}
         </li>
         <li v-if="!!currentlyViewingStudent.guardian_name">
-          <span class="font-semibold">No Telp. Wali:</span>
+          <span class="font-medium">No Telp. Wali:</span>
           {{ currentlyViewingStudent.guardian_phone_number ?? '-' }}
+        </li>
+
+        <li class="mt-8">
+          <div class="font-semibold text-lg mb-1">Riwayat Konsultasi</div>
+          <div v-if="currentlyViewingStudent.consultations.length === 0">
+            Belum terdapat riwayat konsultasi.
+          </div>
         </li>
       </ul>
     </BaseModal>

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ConsultationCategoryController;
+use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Foundation\Application;
@@ -36,6 +38,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('students', StudentController::class);
+    Route::resource('consultation-categories', ConsultationCategoryController::class);
+    Route::resource('consultations', ConsultationController::class)->except('create', 'store');
+    Route::resource('students.consultations', ConsultationController::class)->only('create', 'store');
+
+    Route::post('/consultations/image', [ConsultationController::class, 'uploadImage'])->name('consultations.upload-image');
 });
 
 require __DIR__ . '/auth.php';

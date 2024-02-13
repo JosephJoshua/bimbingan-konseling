@@ -31,4 +31,9 @@ class Student extends Model
         'guardian_name',
         'guardian_phone_number',
     ];
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
 }

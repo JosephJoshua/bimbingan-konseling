@@ -37,6 +37,7 @@ class StudentController extends Controller
                         ->orWhere(DB::raw('LOWER(phone_number)'), 'LIKE', "%{$search}%")
                         ->orWhere(DB::raw('LOWER(email)'), 'LIKE', "%{$search}%");
                 })
+                    ->with('consultations')
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()
                     ->paginate(5)

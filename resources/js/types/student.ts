@@ -25,3 +25,7 @@ export type Student = {
   guardian_name?: string;
   guardian_phone_number?: string;
 };
+
+export type WithStudent<T> = T & {
+  student: Student;
+};

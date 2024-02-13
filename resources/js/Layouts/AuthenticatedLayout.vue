@@ -16,12 +16,19 @@ const routes = reactive<{ title: string; href: string; active: boolean }[]>([
     active: route().current('dashboard'),
   },
   {
+    title: 'Daftar Kategori Konsultasi',
+    href: route('consultation-categories.index'),
+    active: route().current('consultation-categories.*'),
+  },
+  {
     title: 'Daftar Murid',
     href: route('students.index'),
-    active:
-      route().current('students.index') ||
-      route().current('students.create') ||
-      route().current('students.edit'),
+    active: route().current('students.*'),
+  },
+  {
+    title: 'Daftar Konsultasi',
+    href: route('consultations.index'),
+    active: route().current('consultations.*'),
   },
 ]);
 </script>
