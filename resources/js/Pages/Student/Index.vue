@@ -22,6 +22,7 @@ import { ref } from 'vue';
 import { parseISO } from 'date-fns';
 import ellipsis from '@/utils/ellipsis';
 import { WithConsultations } from '@/types/consultation';
+import extractContentFromHtml from '@/utils/extract-content-from-html';
 
 const props = defineProps<{
   data: PaginatedResult<WithConsultations<Student>>;
@@ -506,9 +507,35 @@ const handleDelete = (id: number) => {
         </li>
 
         <li class="mt-8">
-          <div class="font-semibold text-lg mb-1">Riwayat Konsultasi</div>
+          <div class="font-semibold text-xl mb-2">Riwayat Konsultasi</div>
+
           <div v-if="currentlyViewingStudent.consultations.length === 0">
             Belum terdapat riwayat konsultasi.
+          </div>
+
+          <div v-else>
+            <ul class="flex flex-col gap-2">
+              <li
+                v-for="consultation in currentlyViewingStudent.consultations"
+                :key="consultation.id"
+              >
+                <div class="font-medium text-gray-700">
+                  {{
+                    parseISO(consultation.consultation_date).toLocaleDateString(
+                      'id-ID',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      },
+                    )
+                  }}
+                </div>
+                <div class="text-gray-600">
+                  {{ extractContentFromHtml(consultation.description) }}
+                </div>
+              </li>
+            </ul>
           </div>
         </li>
       </ul>
