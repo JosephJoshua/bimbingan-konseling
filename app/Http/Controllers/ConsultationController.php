@@ -7,6 +7,7 @@ use App\Models\ConsultationCategory;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -15,10 +16,36 @@ class ConsultationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'sort_by' => ['nullable', 'sometimes', 'string', Rule::in(['students.full_name', 'consultation_categories.name', 'consultation_date'])],
+            'sort_direction' => ['nullable', 'sometimes', 'string', Rule::in(['asc', 'desc'])],
+            'search' => ['nullable', 'sometimes', 'string'],
+        ]);
+
+        $sortBy = $request->query('sort_by') ?? 'students.full_name';
+        $sortDirection = $request->query('sort_direction') ?? 'asc';
+        $search = strtolower(trim($request->query('search')));
+
         return Inertia::render('Consultation/Index', [
             'data' => fn() => Consultation::with('consultationCategory', 'student')->latest()->paginate(10),
+            'data' => function () use ($sortBy, $sortDirection, $search) {
+                return Consultation::when($search, function ($query) use ($search) {
+                    $query->where(DB::raw('LOWER(students.full_name)'), 'LIKE', "%{$search}%")
+                        ->orWhere(DB::raw('LOWER(consultation_categories.name)'), 'LIKE', "%{$search}%");
+                })
+                    ->with('consultationCategory', 'student')
+                    ->join('consultation_categories', 'consultation_categories.id', '=', 'consultations.consultation_category_id')
+                    ->join('students', 'students.id', '=', 'consultations.student_id')
+                    ->orderBy(DB::raw($sortBy), $sortDirection)
+                    ->select('consultations.*')
+                    ->paginate(10)
+                    ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search]);
+            },
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'search' => $request->query('search'),
         ]);
     }
 
@@ -44,11 +71,11 @@ class ConsultationController extends Controller
             'consultation_date' => ['required', 'date'],
         ]);
 
-        $consultation_date = Carbon::parse($request->get('consultation_date'));
+        $consultationDate = Carbon::parse($request->get('consultation_date'));
 
         $consultation = $student->consultations()->create([
             ...$request->all(),
-            'consultation_date' => $consultation_date,
+            'consultation_date' => $consultationDate,
         ]);
 
         return redirect()->route('consultations.show', ['consultation' => $consultation->id]);
@@ -94,11 +121,11 @@ class ConsultationController extends Controller
             'consultation_date' => ['required', 'date'],
         ]);
 
-        $consultation_date = Carbon::parse($request->get('consultation_date'));
+        $consultationDate = Carbon::parse($request->get('consultation_date'));
 
         $consultation->update([
             ...$request->all(),
-            'consultation_date' => $consultation_date,
+            'consultation_date' => $consultationDate,
         ]);
 
         return redirect()->route('consultations.show', ['consultation' => $consultation->id]);

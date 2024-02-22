@@ -76,7 +76,7 @@ const handleSearch = (query: string) => {
   const newUrl = new URL(decodeURIComponent(window.location.href));
 
   newUrl.searchParams.set('page', '1');
-  newUrl.searchParams.set('search', query.trim());
+  newUrl.searchParams.set('search', query);
 
   router.get(newUrl, undefined, {
     only: ['data', 'search'],

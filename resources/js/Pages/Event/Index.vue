@@ -13,16 +13,15 @@ import {
 import { PaginatedResult } from '@/types/paginated-result';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { format } from 'date-fns';
-import { Consultation } from '@/types/consultation';
-import { WithStudent } from '@/types/student';
-import { WithConsultationCategory } from '@/types/consultation-category';
 import { id } from 'date-fns/locale/id';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
+import { Event as AppEvent } from '@/types/event';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const props = defineProps<{
-  data: PaginatedResult<WithStudent<WithConsultationCategory<Consultation>>>;
+  data: PaginatedResult<AppEvent>;
   search: string;
   sort_by: string;
   sort_direction: 'asc' | 'desc';
@@ -84,7 +83,7 @@ const handleSearch = (query: string) => {
 };
 
 const handleDelete = (id: number) => {
-  deleteForm.delete(route('consultations.destroy', { consultation: id }), {
+  deleteForm.delete(route('events.destroy', { consultation: id }), {
     onSuccess: () => {
       router.reload({ only: ['data'] });
     },
@@ -93,7 +92,7 @@ const handleDelete = (id: number) => {
 </script>
 
 <template>
-  <Head title="Daftar Konsultasi" />
+  <Head title="Daftar Kegiatan" />
 
   <AuthenticatedLayout>
     <template #header>
@@ -101,8 +100,12 @@ const handleDelete = (id: number) => {
         <h2
           class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight"
         >
-          Daftar Konsultasi
+          Daftar Kegiatan
         </h2>
+
+        <Link :href="route('events.create')">
+          <SecondaryButton>Tambah Kegiatan</SecondaryButton>
+        </Link>
       </div>
     </template>
 
@@ -142,42 +145,33 @@ const handleDelete = (id: number) => {
                   <th scope="col" class="px-6 py-3">
                     <div
                       class="whitespace-nowrap flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
-                      @click="() => handleSort('students.full_name')"
+                      @click="() => handleSort('event_date')"
                     >
-                      Nama Murid
+                      Tanggal Kegiatan
 
-                      <component
-                        :is="getSortIcon('students.full_name')"
-                        class="w-4"
-                      />
+                      <component :is="getSortIcon('event_date')" class="w-4" />
                     </div>
                   </th>
 
                   <th scope="col" class="px-6 py-3">
                     <div
                       class="whitespace-nowrap flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
-                      @click="() => handleSort('consultation_categories.name')"
+                      @click="() => handleSort('event_time')"
                     >
-                      Kategori
+                      Waktu Kegiatan
 
-                      <component
-                        :is="getSortIcon('consultation_categories.name')"
-                        class="w-4"
-                      />
+                      <component :is="getSortIcon('event_time')" class="w-4" />
                     </div>
                   </th>
 
                   <th scope="col" class="px-6 py-3">
                     <div
                       class="whitespace-nowrap flex items-center text-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
-                      @click="() => handleSort('consultation_date')"
+                      @click="() => handleSort('title')"
                     >
-                      Tanggal Konsultasi
+                      Nama Kegiatan
 
-                      <component
-                        :is="getSortIcon('consultation_date')"
-                        class="w-4"
-                      />
+                      <component :is="getSortIcon('title')" class="w-4" />
                     </div>
                   </th>
 
@@ -194,42 +188,38 @@ const handleDelete = (id: number) => {
               </thead>
               <tbody>
                 <tr
-                  v-for="consultation in data.data"
-                  :key="consultation.id"
+                  v-for="event in data.data"
+                  :key="event.id"
                   class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
-                  <td
-                    class="px-6 py-4 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                  >
-                    {{ consultation.student.full_name }}
-                  </td>
-
                   <td class="px-6 py-4 text-center">
-                    <span
-                      class="px-2 py-1 text-xs font-semibold leading-none text-green-800 bg-green-100 rounded-full"
-                    >
-                      {{ consultation.consultation_category.name }}
-                    </span>
-                  </td>
-
-                  <th class="px-6 py-4 whitespace-nowrap">
                     {{
-                      format(consultation.consultation_date, 'd MMMM y', {
+                      format(event.event_date, 'd MMMM y', {
                         locale: id,
                       })
                     }}
+                  </td>
+
+                  <td class="px-6 py-4 text-center">
+                    {{ event.event_time }}
+                  </td>
+
+                  <th
+                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                  >
+                    {{ event.title }}
                   </th>
 
                   <td class="px-6 py-4">
-                    {{ extractContentFromHtml(consultation.description) }}
+                    {{ extractContentFromHtml(event.description) }}
                   </td>
 
                   <td class="px-6 py-4">
                     <div class="flex justify-end items-center gap-2">
                       <Link
                         :href="
-                          route('consultations.show', {
-                            consultation: consultation.id,
+                          route('events.show', {
+                            event: event.id,
                           })
                         "
                       >
@@ -240,8 +230,8 @@ const handleDelete = (id: number) => {
 
                       <Link
                         :href="
-                          route('consultations.edit', {
-                            consultation: consultation.id,
+                          route('events.edit', {
+                            event: event.id,
                           })
                         "
                       >
@@ -251,10 +241,10 @@ const handleDelete = (id: number) => {
                       </Link>
 
                       <DeleteButton
-                        title="Hapus Konsultasi"
-                        message="Apakah Anda yakin ingin menghapus konsultasi ini?"
+                        title="Hapus Kegiatan"
+                        message="Apakah Anda yakin ingin menghapus kegiatan ini?"
                         :loading="deleteForm.processing"
-                        @delete="() => handleDelete(consultation.id)"
+                        @delete="() => handleDelete(event.id)"
                       />
                     </div>
                   </td>

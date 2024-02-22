@@ -30,6 +30,11 @@ const routes = reactive<{ title: string; href: string; active: boolean }[]>([
     href: route('consultations.index'),
     active: route().current('consultations.*'),
   },
+  {
+    title: 'Daftar Kegiatan',
+    href: route('events.index'),
+    active: route().current('events.*'),
+  },
 ]);
 </script>
 

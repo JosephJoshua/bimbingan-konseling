@@ -40,12 +40,12 @@ class StudentController extends Controller
                     ->with('consultations')
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()
-                    ->paginate(5)
-                    ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection]);
+                    ->paginate(10)
+                    ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search]);
             },
             'sort_by' => $sortBy,
             'sort_direction' => $sortDirection,
-            'search' => $search,
+            'search' => $request->query('search'),
         ]);
     }
 
