@@ -83,7 +83,7 @@ const handleSearch = (query: string) => {
 };
 
 const handleDelete = (id: number) => {
-  deleteForm.delete(route('events.destroy', { consultation: id }), {
+  deleteForm.delete(route('events.destroy', { event: id }), {
     onSuccess: () => {
       router.reload({ only: ['data'] });
     },
