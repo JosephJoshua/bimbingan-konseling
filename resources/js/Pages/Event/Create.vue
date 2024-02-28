@@ -16,6 +16,7 @@ import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';
 import 'quill-paste-smart';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import 'quill-image-uploader/dist/quill.imageUploader.min.css';
 import { parseISO } from 'date-fns';
 import axios from 'axios';
 

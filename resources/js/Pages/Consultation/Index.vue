@@ -20,6 +20,7 @@ import { id } from 'date-fns/locale/id';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
+import ellipsis from '@/utils/ellipsis';
 
 const props = defineProps<{
   data: PaginatedResult<WithStudent<WithConsultationCategory<Consultation>>>;
@@ -221,7 +222,12 @@ const handleDelete = (id: number) => {
                   </th>
 
                   <td class="px-6 py-4">
-                    {{ extractContentFromHtml(consultation.description) }}
+                    {{
+                      ellipsis(
+                        extractContentFromHtml(consultation.description),
+                        50,
+                      )
+                    }}
                   </td>
 
                   <td class="px-6 py-4">

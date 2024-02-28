@@ -2,7 +2,7 @@
 
 <template>
   <button
-    class="dark:bg-gray-600 rounded-md p-2 transition-all duration-200 hover:brightness-125"
+    class="dark:bg-gray-600 rounded-full p-2 transition-all duration-200 hover:brightness-125"
     type="button"
   >
     <slot />

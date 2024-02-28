@@ -7,7 +7,7 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   EyeIcon,
-  ChatBubbleLeftRightIcon,
+  PlusIcon,
 } from '@heroicons/vue/24/solid';
 import { Student } from '@/types/student';
 import { PaginatedResult } from '@/types/paginated-result';
@@ -23,16 +23,22 @@ import { parseISO } from 'date-fns';
 import ellipsis from '@/utils/ellipsis';
 import { WithConsultations } from '@/types/consultation';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
+import { WithStudentAchievements } from '@/types/student-achievement';
 
 const props = defineProps<{
-  data: PaginatedResult<WithConsultations<Student>>;
+  data: PaginatedResult<WithStudentAchievements<WithConsultations<Student>>>;
   search: string;
   sort_by: string;
   sort_direction: 'asc' | 'desc';
 }>();
 
-const currentlyViewingStudent = ref<WithConsultations<Student> | null>(null);
-const deleteForm = useForm({});
+const currentlyViewingStudent = ref<WithStudentAchievements<
+  WithConsultations<Student>
+> | null>(null);
+
+const deleteStudentForm = useForm({});
+const deleteConsultationForm = useForm({});
+const deleteAchievementForm = useForm({});
 
 const getSortIcon = (column: string) => {
   const isSorting = props.sort_by === column;
@@ -87,12 +93,38 @@ const handleSearch = (query: string) => {
   });
 };
 
-const handleDelete = (id: number) => {
-  deleteForm.delete(route('students.destroy', { student: id }), {
+const handleDeleteStudent = (id: number) => {
+  deleteStudentForm.delete(route('students.destroy', { student: id }), {
     onSuccess: () => {
       router.reload({ only: ['data'] });
     },
   });
+};
+
+const handleDeleteConsultation = (id: number) => {
+  deleteConsultationForm.delete(
+    route('consultations.destroy', { consultation: id }),
+    {
+      onSuccess: () => {
+        router.reload({ only: ['data'] });
+      },
+    },
+  );
+
+  currentlyViewingStudent.value = null;
+};
+
+const handleDeleteAchievement = (id: number) => {
+  deleteAchievementForm.delete(
+    route('student-achievements.destroy', { student_achievement: id }),
+    {
+      onSuccess: () => {
+        router.reload({ only: ['data'] });
+      },
+    },
+  );
+
+  currentlyViewingStudent.value = null;
 };
 </script>
 
@@ -320,25 +352,11 @@ const handleDelete = (id: number) => {
                         </ActionButton>
                       </Link>
 
-                      <Link
-                        :href="
-                          route('students.consultations.create', {
-                            student: student.id,
-                          })
-                        "
-                      >
-                        <ActionButton title="Konsultasi">
-                          <ChatBubbleLeftRightIcon
-                            class="w-4 h-4 text-green-600"
-                          />
-                        </ActionButton>
-                      </Link>
-
                       <DeleteButton
                         title="Hapus Murid"
                         message="Apakah Anda yakin ingin menghapus murid ini?"
-                        :loading="deleteForm.processing"
-                        @delete="() => handleDelete(student.id)"
+                        :loading="deleteStudentForm.processing"
+                        @delete="() => handleDeleteStudent(student.id)"
                       />
                     </div>
                   </td>
@@ -426,7 +444,7 @@ const handleDelete = (id: number) => {
       :title="currentlyViewingStudent?.full_name ?? ''"
       @close="() => (currentlyViewingStudent = null)"
     >
-      <ul v-if="!!currentlyViewingStudent">
+      <ul v-if="!!currentlyViewingStudent" class="flex flex-col gap-1">
         <li>
           <span class="font-medium">ID:</span>
           {{ currentlyViewingStudent.id }}
@@ -507,7 +525,21 @@ const handleDelete = (id: number) => {
         </li>
 
         <li class="mt-8">
-          <div class="font-semibold text-xl mb-2">Riwayat Konsultasi</div>
+          <div class="flex justify-between gap-4 items-end mb-4">
+            <div class="font-semibold text-xl">Riwayat Konsultasi</div>
+
+            <Link
+              :href="
+                route('students.consultations.create', {
+                  student: currentlyViewingStudent.id,
+                })
+              "
+            >
+              <ActionButton title="Tambah Konsultasi" class="bg-gray-100">
+                <PlusIcon class="w-4 h-4" />
+              </ActionButton>
+            </Link>
+          </div>
 
           <div v-if="currentlyViewingStudent.consultations.length === 0">
             Belum terdapat riwayat konsultasi.
@@ -518,21 +550,126 @@ const handleDelete = (id: number) => {
               <li
                 v-for="consultation in currentlyViewingStudent.consultations"
                 :key="consultation.id"
+                class="border-b border-gray-200 pb-2"
               >
-                <div class="font-medium text-gray-700">
-                  {{
-                    parseISO(consultation.consultation_date).toLocaleDateString(
-                      'id-ID',
-                      {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      },
-                    )
-                  }}
+                <div class="flex justify-between items-end gap-4">
+                  <div>
+                    <div class="font-medium text-gray-700">
+                      {{
+                        parseISO(
+                          consultation.consultation_date,
+                        ).toLocaleDateString('id-ID', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      }}
+                    </div>
+                    <div
+                      class="text-gray-600 text-sm mt-1 whitespace-normal break-all"
+                    >
+                      {{
+                        ellipsis(
+                          extractContentFromHtml(consultation.description),
+                          50,
+                        )
+                      }}
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <Link
+                      :href="
+                        route('consultations.show', {
+                          consultation: consultation.id,
+                        })
+                      "
+                    >
+                      <ActionButton title="Lihat">
+                        <EyeIcon class="w-4 h-4 text-blue-500" />
+                      </ActionButton>
+                    </Link>
+
+                    <Link
+                      :href="
+                        route('consultations.edit', {
+                          consultation: consultation.id,
+                        })
+                      "
+                    >
+                      <ActionButton title="Ubah">
+                        <PencilIcon class="w-4 h-4 text-orange-400" />
+                      </ActionButton>
+                    </Link>
+
+                    <DeleteButton
+                      title="Hapus Konsultasi"
+                      message="Apakah Anda yakin ingin menghapus konsultasi ini?"
+                      :loading="deleteConsultationForm.processing"
+                      @delete="() => handleDeleteConsultation(consultation.id)"
+                    />
+                  </div>
                 </div>
-                <div class="text-gray-600">
-                  {{ extractContentFromHtml(consultation.description) }}
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="mt-8">
+          <div class="flex justify-between gap-4 items-end mb-4">
+            <div class="font-semibold text-xl">Prestasi</div>
+
+            <Link
+              :href="
+                route('students.achievements.create', {
+                  student: currentlyViewingStudent.id,
+                })
+              "
+            >
+              <ActionButton title="Tambah Prestasi" class="bg-gray-100">
+                <PlusIcon class="w-4 h-4" />
+              </ActionButton>
+            </Link>
+          </div>
+
+          <div v-if="currentlyViewingStudent.achievements.length === 0">
+            Belum terdapat prestasi.
+          </div>
+
+          <div v-else>
+            <ul class="flex flex-col gap-2">
+              <li
+                v-for="achievement in currentlyViewingStudent.achievements"
+                :key="achievement.id"
+                class="border-b border-gray-200 pb-2"
+              >
+                <div class="flex justify-between items-end gap-6">
+                  <div
+                    class="font-medium text-gray-700 whitespace-normal break-all"
+                  >
+                    {{ achievement.title }}
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <Link
+                      :href="
+                        route('student-achievements.edit', {
+                          student_achievement: achievement.id,
+                        })
+                      "
+                    >
+                      <ActionButton title="Ubah">
+                        <PencilIcon class="w-4 h-4 text-orange-400" />
+                      </ActionButton>
+                    </Link>
+
+                    <DeleteButton
+                      title="Hapus Prestasi"
+                      message="Apakah Anda yakin ingin menghapus prestasi ini?"
+                      :loading="deleteAchievementForm.processing"
+                      @delete="() => handleDeleteAchievement(achievement.id)"
+                    />
+                  </div>
                 </div>
               </li>
             </ul>

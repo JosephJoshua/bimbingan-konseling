@@ -29,7 +29,7 @@ class EventController extends Controller
         return Inertia::render('Event/Index', [
             'data' => function () use ($sortBy, $sortDirection, $search) {
                 return Event::when($search, function ($query) use ($search) {
-                    $query->where(DB::raw('LOWER(title)', 'LIKE', '%' . $search . '%'));
+                    $query->where(DB::raw('LOWER(title)'), 'LIKE', '%' . $search . '%');
                 })
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()

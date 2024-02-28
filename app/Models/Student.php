@@ -36,4 +36,9 @@ class Student extends Model
     {
         return $this->hasMany(Consultation::class);
     }
+
+    public function achievements()
+    {
+        return $this->hasMany(StudentAchievement::class);
+    }
 }

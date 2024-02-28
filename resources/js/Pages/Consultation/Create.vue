@@ -19,6 +19,7 @@ import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';
 import 'quill-paste-smart';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import 'quill-image-uploader/dist/quill.imageUploader.min.css';
 import { parseISO } from 'date-fns';
 import axios from 'axios';
 
@@ -99,7 +100,7 @@ onMounted(() => {
           class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg px-6 py-4"
         >
           <form @submit.prevent="submit">
-            <div class="mt-4">
+            <div>
               <InputLabel
                 for="consultation_date"
                 value="Tanggal Konsultasi"

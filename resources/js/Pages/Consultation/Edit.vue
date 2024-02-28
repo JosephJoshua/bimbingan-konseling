@@ -99,7 +99,7 @@ onMounted(() => {
           class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg px-6 py-4"
         >
           <form @submit.prevent="submit">
-            <div class="mt-4">
+            <div>
               <InputLabel
                 for="consultation_date"
                 value="Tanggal Konsultasi"

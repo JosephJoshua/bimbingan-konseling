@@ -29,7 +29,7 @@ class ConsultationController extends Controller
         $search = strtolower(trim($request->query('search')));
 
         return Inertia::render('Consultation/Index', [
-            'data' => fn() => Consultation::with('consultationCategory', 'student')->latest()->paginate(10),
+            'data' => fn () => Consultation::with('consultationCategory', 'student')->latest()->paginate(10),
             'data' => function () use ($sortBy, $sortDirection, $search) {
                 return Consultation::when($search, function ($query) use ($search) {
                     $query->where(DB::raw('LOWER(students.full_name)'), 'LIKE', "%{$search}%")
@@ -55,7 +55,7 @@ class ConsultationController extends Controller
     public function create(Student $student)
     {
         return Inertia::render('Consultation/Create', [
-            'categories' => fn() => ConsultationCategory::orderBy('name')->get(),
+            'categories' => fn () => ConsultationCategory::orderBy('name')->get(),
             'student' => $student,
         ]);
     }
@@ -102,7 +102,7 @@ class ConsultationController extends Controller
     {
         return Inertia::render('Consultation/Edit', [
             'data' => $consultation->load('consultationCategory', 'student'),
-            'categories' => fn() => ConsultationCategory::orderBy('name')->get(),
+            'categories' => fn () => ConsultationCategory::orderBy('name')->get(),
             'index' => Consultation::where('student_id', $consultation->student_id)
                 ->where('consultation_date', '<', $consultation->consultation_date)
                 ->latest()
@@ -137,7 +137,7 @@ class ConsultationController extends Controller
     public function destroy(Consultation $consultation)
     {
         $consultation->delete();
-        return redirect()->route('consultations.index');
+        return redirect()->back();
     }
 
     public function uploadImage(Request $request)

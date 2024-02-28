@@ -19,6 +19,7 @@ import DeleteButton from '@/Components/DeleteButton.vue';
 import { Event as AppEvent } from '@/types/event';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import ellipsis from '@/utils/ellipsis';
 
 const props = defineProps<{
   data: PaginatedResult<AppEvent>;
@@ -211,7 +212,9 @@ const handleDelete = (id: number) => {
                   </th>
 
                   <td class="px-6 py-4">
-                    {{ extractContentFromHtml(event.description) }}
+                    {{
+                      ellipsis(extractContentFromHtml(event.description), 50)
+                    }}
                   </td>
 
                   <td class="px-6 py-4">
