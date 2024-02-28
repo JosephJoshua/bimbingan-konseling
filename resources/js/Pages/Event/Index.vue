@@ -12,7 +12,7 @@ import {
 } from '@heroicons/vue/24/solid';
 import { PaginatedResult } from '@/types/paginated-result';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { format } from 'date-fns';
+import { endOfDay, format, formatDate, startOfDay } from 'date-fns';
 import { id } from 'date-fns/locale/id';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
@@ -21,6 +21,9 @@ import extractContentFromHtml from '@/utils/extract-content-from-html';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import ellipsis from '@/utils/ellipsis';
 import BaseSelect from '@/Components/BaseSelect.vue';
+import VueTailwindDatePicker from 'vue-tailwind-datepicker';
+import { computed } from 'vue';
+import { DeprecationTypes } from 'vue';
 
 const props = defineProps<{
   data: PaginatedResult<AppEvent & { status: 'upcoming' | 'done' }>;
@@ -28,7 +31,22 @@ const props = defineProps<{
   sort_by: string;
   sort_direction: 'asc' | 'desc';
   status_filter: 'all' | 'upcoming' | 'done';
+  start_date?: string;
+  end_date?: string;
 }>();
+
+const dateFilters = computed(() => {
+  return {
+    startDate:
+      props.start_date == null
+        ? ''
+        : formatDate(new Date(props.start_date), 'dd MMM yyyy'),
+    endDate:
+      props.end_date == null
+        ? ''
+        : formatDate(new Date(props.end_date), 'dd MMM yyyy'),
+  };
+});
 
 const deleteForm = useForm({});
 
@@ -99,6 +117,23 @@ const handleFilterStatus = (filter: string) => {
   });
 };
 
+const handleFilterDate = (dates: { startDate: string; endDate: string }) => {
+  const { startDate, endDate } = dates;
+
+  const newUrl = new URL(decodeURIComponent(window.location.href));
+
+  newUrl.searchParams.set('page', '1');
+  newUrl.searchParams.set('start_date', startDate);
+  newUrl.searchParams.set('end_date', endDate);
+
+  router.get(newUrl, undefined, {
+    only: ['data', 'start_date', 'end_date'],
+    replace: true,
+    preserveState: true,
+    preserveScroll: true,
+  });
+};
+
 const handleDelete = (id: number) => {
   deleteForm.delete(route('events.destroy', { event: id }), {
     onSuccess: () => {
@@ -128,10 +163,10 @@ const handleDelete = (id: number) => {
 
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div
-          class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg"
-        >
-          <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+          <div
+            class="relative min-h-[calc(95vh-200px)] overflow-x-auto shadow-md sm:rounded-lg"
+          >
             <div class="m-4 flex items-center gap-4">
               <div>
                 <label for="table-search" class="sr-only">Cari</label>
@@ -147,7 +182,7 @@ const handleDelete = (id: number) => {
                     id="table-search"
                     class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Cari..."
-                    :value="search"
+                    :value="search ?? ''"
                     @input="(e) => handleSearch((e.target as HTMLInputElement).value)"
                   />
                 </div>
@@ -161,6 +196,30 @@ const handleDelete = (id: number) => {
                 <option value="upcoming">Mendatang</option>
                 <option value="done">Sudah Selesai</option>
               </BaseSelect>
+
+              <VueTailwindDatePicker
+                placeholder="Pilih tanggal"
+                separator=" - "
+                :options="{
+                  shortcuts: {
+                    today: 'Hari ini',
+                    yesterday: 'Kemarin',
+                    past: (period) => `${period} hari terakhir`,
+                    currentMonth: 'Bulan ini',
+                    pastMonth: 'Bulan lalu',
+                  },
+                  footer: {
+                    apply: 'Terapkan',
+                    cancel: 'Batal',
+                  },
+                }"
+                :formatter="{
+                  date: 'DD MMM YYYY',
+                  month: 'MMM',
+                }"
+                :model-value="dateFilters"
+                @update:model-value="handleFilterDate"
+              />
             </div>
 
             <table

@@ -25,11 +25,13 @@ class EventController extends Controller
 
         $sortBy = $request->query('sort_by') ?? 'event_date';
         $sortDirection = $request->query('sort_direction') ?? 'desc';
-        $search = strtolower(trim($request->query('search')));
         $statusFilter = $request->query('status') ?? 'all';
+        $startDate = $request->query('start_date') ? Carbon::parse($request->query('start_date'))->startOfDay() : null;
+        $endDate = $request->query('end_date') ? Carbon::parse($request->query('end_date'))->endOfDay() : null;
+        $search = strtolower(trim($request->query('search')));
 
         return Inertia::render('Event/Index', [
-            'data' => function () use ($sortBy, $sortDirection, $search, $statusFilter) {
+            'data' => function () use ($sortBy, $sortDirection, $search, $statusFilter, $startDate, $endDate) {
                 return Event::when($search, function ($query) use ($search) {
                     $query->where(DB::raw('LOWER(title)'), 'LIKE', '%' . $search . '%');
                 })
@@ -39,16 +41,24 @@ class EventController extends Controller
                     ->when($statusFilter === 'done', function ($query) {
                         $query->where('event_date', '<', now()->startOfDay());
                     })
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->where('event_date', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->where('event_date', '<=', $endDate);
+                    })
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()
                     ->select('*', DB::raw('IF(event_date >= CURDATE(), "upcoming", "done") as status'))
                     ->paginate(10)
-                    ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search]);
+                    ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search, 'status' => $statusFilter, 'start_date' => $startDate, 'end_date' => $endDate]);
             },
             'sort_by' => $sortBy,
             'sort_direction' => $sortDirection,
-            'search' => $request->query('search'),
+            'search' => $request->query('search') ?? '',
             'status_filter' => $statusFilter,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
         ]);
     }
 
