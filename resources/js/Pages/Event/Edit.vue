@@ -28,7 +28,7 @@ const form = useForm({
   title: props.data.title,
   description: props.data.description,
   event_date: props.data.event_date,
-  event_time: props.data.event_time,
+  event_time: props.data.event_time.split(':').slice(0, 2).join(':'),
 });
 
 const eventDateRef = ref<HTMLInputElement | null>(null);
@@ -37,6 +37,7 @@ const submit = () => {
   if (eventDateRef.value === null) return;
 
   form.event_date = eventDateRef.value.value;
+  console.log(form.event_date);
   form.put(route('events.update', { event: props.data.id }));
 };
 

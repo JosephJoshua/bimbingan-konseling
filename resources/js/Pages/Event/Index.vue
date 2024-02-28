@@ -20,12 +20,14 @@ import { Event as AppEvent } from '@/types/event';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import ellipsis from '@/utils/ellipsis';
+import BaseSelect from '@/Components/BaseSelect.vue';
 
 const props = defineProps<{
-  data: PaginatedResult<AppEvent>;
+  data: PaginatedResult<AppEvent & { status: 'upcoming' | 'done' }>;
   search: string;
   sort_by: string;
   sort_direction: 'asc' | 'desc';
+  status_filter: 'all' | 'upcoming' | 'done';
 }>();
 
 const deleteForm = useForm({});
@@ -83,6 +85,20 @@ const handleSearch = (query: string) => {
   });
 };
 
+const handleFilterStatus = (filter: string) => {
+  const newUrl = new URL(decodeURIComponent(window.location.href));
+
+  newUrl.searchParams.set('page', '1');
+  newUrl.searchParams.set('status', filter);
+
+  router.get(newUrl, undefined, {
+    only: ['data', 'status_filter'],
+    replace: true,
+    preserveState: true,
+    preserveScroll: true,
+  });
+};
+
 const handleDelete = (id: number) => {
   deleteForm.delete(route('events.destroy', { event: id }), {
     onSuccess: () => {
@@ -116,24 +132,35 @@ const handleDelete = (id: number) => {
           class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg"
         >
           <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <div class="m-4">
-              <label for="table-search" class="sr-only">Cari</label>
-              <div class="relative mt-1">
-                <div
-                  class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none"
-                >
-                  <MagnifyingGlassIcon class="w-4 h-4" />
-                </div>
+            <div class="m-4 flex items-center gap-4">
+              <div>
+                <label for="table-search" class="sr-only">Cari</label>
+                <div class="relative">
+                  <div
+                    class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none"
+                  >
+                    <MagnifyingGlassIcon class="w-4 h-4" />
+                  </div>
 
-                <input
-                  type="text"
-                  id="table-search"
-                  class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Cari..."
-                  :value="search"
-                  @input="(e) => handleSearch((e.target as HTMLInputElement).value)"
-                />
+                  <input
+                    type="text"
+                    id="table-search"
+                    class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Cari..."
+                    :value="search"
+                    @input="(e) => handleSearch((e.target as HTMLInputElement).value)"
+                  />
+                </div>
               </div>
+
+              <BaseSelect
+                :model-value="status_filter"
+                @update:model-value="handleFilterStatus"
+              >
+                <option value="all">Semua</option>
+                <option value="upcoming">Mendatang</option>
+                <option value="done">Sudah Selesai</option>
+              </BaseSelect>
             </div>
 
             <table
@@ -184,6 +211,14 @@ const handleDelete = (id: number) => {
                     </div>
                   </th>
 
+                  <th scope="col" class="px-6 py-3">
+                    <div
+                      class="whitespace-nowrap flex justify-center text-center items-center gap-1 transition-all duration-200 hover:brightness-125"
+                    >
+                      Status
+                    </div>
+                  </th>
+
                   <th></th>
                 </tr>
               </thead>
@@ -215,6 +250,22 @@ const handleDelete = (id: number) => {
                     {{
                       ellipsis(extractContentFromHtml(event.description), 50)
                     }}
+                  </td>
+
+                  <td class="px-6 py-4 text-center">
+                    <span
+                      :class="{
+                        'bg-green-100 text-green-800 dark:bg-green-500 dark:text-green-100':
+                          event.status === 'done',
+                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-yellow-100':
+                          event.status === 'upcoming',
+                      }"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    >
+                      {{
+                        event.status === 'done' ? 'Sudah Selesai' : 'Mendatang'
+                      }}
+                    </span>
                   </td>
 
                   <td class="px-6 py-4">
