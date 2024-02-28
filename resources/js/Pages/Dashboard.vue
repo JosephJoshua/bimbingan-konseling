@@ -15,7 +15,9 @@ import { Head } from '@inertiajs/vue3';
 
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div
+          class="relative min-h-[calc(95vh-200px)] overflow-x-auto shadow-md sm:rounded-lg flex flex-col"
+        >
           <div class="p-6 text-gray-900">You're logged in!</div>
         </div>
       </div>

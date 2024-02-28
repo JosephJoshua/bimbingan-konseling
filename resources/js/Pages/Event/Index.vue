@@ -165,7 +165,7 @@ const handleDelete = (id: number) => {
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
           <div
-            class="relative min-h-[calc(95vh-200px)] overflow-x-auto shadow-md sm:rounded-lg"
+            class="relative min-h-[calc(95vh-200px)] overflow-x-auto shadow-md sm:rounded-lg flex flex-col"
           >
             <div class="m-4 flex items-center gap-4">
               <div>
@@ -365,76 +365,80 @@ const handleDelete = (id: number) => {
               </tbody>
             </table>
 
-            <nav
-              class="flex items-center flex-column flex-wrap md:flex-row justify-between m-4"
-              aria-label="Table navigation"
-            >
-              <span
-                class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto"
+            <div class="flex-1 flex items-end">
+              <nav
+                class="flex flex-1 flex-wrap items-center justify-between m-4"
+                aria-label="Table navigation"
               >
-                Menampilkan
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  {{ data.from }}-{{ data.to }}
+                <span
+                  class="text-sm font-normal text-gray-500 dark:text-gray-400"
+                >
+                  Menampilkan
+                  <span class="font-semibold text-gray-900 dark:text-white">
+                    {{ data.from }}-{{ data.to }}
+                  </span>
+                  dari
+                  <span class="font-semibold text-gray-900 dark:text-white">
+                    {{ data.total }}
+                  </span>
                 </span>
-                dari
-                <span class="font-semibold text-gray-900 dark:text-white">
-                  {{ data.total }}
-                </span>
-              </span>
 
-              <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                  <select
-                    class="py-0.5 text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    @change="(e: Event) => handleSelectPage((e.target as HTMLSelectElement).value)"
-                  >
-                    <option
-                      v-for="page in Array.from(
-                        { length: data.last_page },
-                        (_, i) => i + 1,
-                      )"
-                      :key="page"
-                      :value="page"
-                      :selected="data.current_page === page"
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-2">
+                    <select
+                      class="py-0.5 text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      @change="(e: Event) => handleSelectPage((e.target as HTMLSelectElement).value)"
                     >
-                      {{ page }}
-                    </option>
-                  </select>
+                      <option
+                        v-for="page in Array.from(
+                          { length: data.last_page },
+                          (_, i) => i + 1,
+                        )"
+                        :key="page"
+                        :value="page"
+                        :selected="data.current_page === page"
+                      >
+                        {{ page }}
+                      </option>
+                    </select>
 
-                  <div class="text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">dari </span>
-                    <span class="text-gray-900 dark:text-white">
-                      {{ data.last_page }}
-                    </span>
-                    <span class="text-gray-500 dark:text-gray-400">
-                      halaman
-                    </span>
+                    <div class="text-sm">
+                      <span class="text-gray-500 dark:text-gray-400"
+                        >dari
+                      </span>
+                      <span class="text-gray-900 dark:text-white">
+                        {{ data.last_page }}
+                      </span>
+                      <span class="text-gray-500 dark:text-gray-400">
+                        halaman
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8"
+                  >
+                    <Link
+                      v-if="data.prev_page_url"
+                      :href="data.prev_page_url"
+                      class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                      replace
+                    >
+                      <ChevronLeftIcon class="w-4 h-4" />
+                    </Link>
+
+                    <Link
+                      v-if="data.next_page_url"
+                      :href="data.next_page_url"
+                      class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                      replace
+                    >
+                      <ChevronRightIcon class="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
-
-                <div
-                  class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8"
-                >
-                  <Link
-                    v-if="data.prev_page_url"
-                    :href="data.prev_page_url"
-                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                    replace
-                  >
-                    <ChevronLeftIcon class="w-4 h-4" />
-                  </Link>
-
-                  <Link
-                    v-if="data.next_page_url"
-                    :href="data.next_page_url"
-                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                    replace
-                  >
-                    <ChevronRightIcon class="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </nav>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
