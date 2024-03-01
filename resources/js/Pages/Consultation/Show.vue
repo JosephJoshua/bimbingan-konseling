@@ -42,11 +42,7 @@ defineProps<{
             <div class="flex items-center gap-2">
               <CalendarIcon class="w-5 h-5" />
               <span class="text-gray-600">
-                {{
-                  format(consultation.consultation_date, 'd MMMM y', {
-                    locale: id,
-                  })
-                }}
+                {{ format(consultation.consultation_date, 'd MMMM y') }}
               </span>
             </div>
 

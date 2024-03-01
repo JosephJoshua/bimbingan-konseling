@@ -214,11 +214,7 @@ const handleDelete = (id: number) => {
                   </td>
 
                   <th class="px-6 py-4 whitespace-nowrap">
-                    {{
-                      format(consultation.consultation_date, 'd MMMM y', {
-                        locale: id,
-                      })
-                    }}
+                    {{ format(consultation.consultation_date, 'd MMMM y') }}
                   </th>
 
                   <td class="px-6 py-4">
@@ -274,7 +270,7 @@ const handleDelete = (id: number) => {
                 aria-label="Table navigation"
               >
                 <span
-                  class="text-sm font-normal text-gray-500 dark:text-gray-400"
+                  class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0"
                 >
                   Menampilkan
                   <span class="font-semibold text-gray-900 dark:text-white">

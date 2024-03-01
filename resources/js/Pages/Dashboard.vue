@@ -291,7 +291,7 @@ const consultationsPerDayData = computed(() => {
                 >
                   <h4 class="font-medium">{{ event.title }}</h4>
                   <p class="text-gray-600 text-sm">
-                    {{ format(new Date(event.event_date), 'd MMM yyyy') }}
+                    {{ format(new Date(event.event_date), 'd MMM y') }}
                     {{ event.event_time.split(':').slice(0, 2).join(':') }}
                   </p>
                 </li>

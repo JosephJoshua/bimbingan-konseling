@@ -288,11 +288,7 @@ const handleDelete = (id: number) => {
                   class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td class="px-6 py-4 text-center">
-                    {{
-                      format(event.event_date, 'd MMMM y', {
-                        locale: id,
-                      })
-                    }}
+                    {{ format(event.event_date, 'd MMMM y') }}
                   </td>
 
                   <td class="px-6 py-4 text-center">

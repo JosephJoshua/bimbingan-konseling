@@ -39,11 +39,7 @@ defineProps<{
             <div class="flex items-center gap-2">
               <CalendarIcon class="w-5 h-5" />
               <span class="text-gray-600">
-                {{
-                  format(data.event_date, 'd MMMM y', {
-                    locale: id,
-                  })
-                }}
+                {{ format(data.event_date, 'd MMMM y') }}
                 {{ ' ' }}
                 {{ data.event_time }}
               </span>

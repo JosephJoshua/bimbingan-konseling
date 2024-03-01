@@ -5,8 +5,12 @@ import { createApp, h, DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
+import setDefaultOptions from 'date-fns/setDefaultOptions';
 import 'v-calendar/style.css';
 import { setupCalendar } from 'v-calendar';
+import { id } from 'date-fns/locale';
+
+setDefaultOptions({ locale: id });
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
