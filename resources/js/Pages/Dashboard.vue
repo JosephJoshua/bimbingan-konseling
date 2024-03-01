@@ -62,11 +62,28 @@ const upcomingEvents = computed(() =>
 
 const eventCalendarAttributes = computed(
   (): InstanceType<typeof Calendar>['$props']['attributes'] => {
+    const getRandomCalendarColor = () => {
+      const colors = [
+        'gray',
+        'red',
+        'orange',
+        'yellow',
+        'green',
+        'teal',
+        'blue',
+        'indigo',
+        'purple',
+        'pink',
+      ];
+
+      return colors[Math.floor(Math.random() * (colors.length + 1))];
+    };
+
     return props.events.map((event) => {
       return {
         key: event.id,
         dot: {
-          color: getRandomColor(),
+          color: getRandomCalendarColor(),
           class: event.status === 'done' ? 'opacity-50' : '',
         },
         popover: {
