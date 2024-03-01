@@ -36,10 +36,10 @@ class EventController extends Controller
                     $query->where(DB::raw('LOWER(title)'), 'LIKE', '%' . $search . '%');
                 })
                     ->when($statusFilter === 'upcoming', function ($query) {
-                        $query->where('event_date', '>=', now()->startOfDay());
+                        $query->where(DB::raw('TIMESTAMP(event_date, event_time)'), '>=', DB::raw('CURRENT_TIMESTAMP()'));
                     })
                     ->when($statusFilter === 'done', function ($query) {
-                        $query->where('event_date', '<', now()->startOfDay());
+                        $query->where(DB::raw('TIMESTAMP(event_date, event_time)'), '<', DB::raw('CURRENT_TIMESTAMP()'));
                     })
                     ->when($startDate, function ($query) use ($startDate) {
                         $query->where('event_date', '>=', $startDate);
@@ -49,7 +49,7 @@ class EventController extends Controller
                     })
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()
-                    ->select('*', DB::raw('IF(event_date >= CURDATE(), "upcoming", "done") as status'))
+                    ->select('*', DB::raw('IF(TIMESTAMP(event_date, event_time) >= CURRENT_TIMESTAMP(), "upcoming", "done") as status'))
                     ->paginate(10)
                     ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search, 'status' => $statusFilter, 'start_date' => $startDate, 'end_date' => $endDate]);
             },

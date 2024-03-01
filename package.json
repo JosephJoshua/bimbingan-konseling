@@ -39,6 +39,10 @@
     "vue-tsc": "^1.8.27"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "chart.js": "^4.4.2",
+    "v-calendar": "^3.1.2",
+    "vue-chartjs": "^5.3.0",
     "vue-tailwind-datepicker": "^1.7.1"
   }
 }

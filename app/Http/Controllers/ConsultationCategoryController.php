@@ -15,7 +15,7 @@ class ConsultationCategoryController extends Controller
     public function index()
     {
         return Inertia::render('ConsultationCategory/Index', [
-            'data' => fn() => ConsultationCategory::orderBy('name')->get(),
+            'data' => fn () => ConsultationCategory::orderBy('name')->get(),
         ]);
     }
 
