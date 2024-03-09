@@ -23,6 +23,7 @@ import { endOfDay } from 'date-fns';
 import { startOfDay } from 'date-fns';
 import { isSameDay } from 'date-fns';
 import { format } from 'date-fns';
+import formatEventDate from '@/utils/format-event-date';
 
 ChartJS.register(
   ArcElement,
@@ -48,7 +49,7 @@ const props = defineProps<{
     count: number;
   }[];
   events: (Event & {
-    status: 'upcoming' | 'done';
+    status: 'upcoming' | 'ongoing' | 'done';
   })[];
   most_active_students: {
     full_name: string;
@@ -56,8 +57,10 @@ const props = defineProps<{
   }[];
 }>();
 
-const upcomingEvents = computed(() =>
-  props.events.filter((event) => event.status === 'upcoming'),
+const upcomingOrOngoingEvents = computed(() =>
+  props.events.filter(
+    (event) => event.status === 'upcoming' || event.status === 'ongoing',
+  ),
 );
 
 const eventCalendarAttributes = computed(
@@ -82,17 +85,19 @@ const eventCalendarAttributes = computed(
     return props.events.map((event) => {
       return {
         key: event.id,
-        dot: {
+        highlight: {
           color: getRandomCalendarColor(),
-          class: event.status === 'done' ? 'opacity-50' : '',
+          class:
+            event.status === 'done'
+              ? 'opacity-50'
+              : event.status === 'ongoing'
+              ? 'opacity-75'
+              : '',
         },
         popover: {
-          label: `${event.title} @ ${event.event_time
-            .split(':')
-            .slice(0, 2)
-            .join(':')}`,
+          label: `${event.title} @ ${formatEventDate(event)}`,
         },
-        dates: [new Date(event.event_date)],
+        dates: [[new Date(event.start_date), new Date(event.end_date)]],
       };
     });
   },
@@ -215,7 +220,7 @@ const consultationsPerDayData = computed(() => {
               :attributes="[
                 {
                   key: 'today',
-                  highlight: true,
+                  dot: true,
                   dates: [new Date()],
                 },
                 ...eventCalendarAttributes,
@@ -264,7 +269,7 @@ const consultationsPerDayData = computed(() => {
                 <li
                   v-for="student in most_active_students"
                   :key="`${student.full_name}-${student.count}`"
-                  class="bg-white shadow-sm rounded-md mb-2 px-4 py-2"
+                  class="bg-white border rounded-md mb-2 px-4 py-2"
                 >
                   <h4 class="font-medium">{{ student.full_name }}</h4>
                   <p class="text-gray-600 text-sm">
@@ -282,22 +287,40 @@ const consultationsPerDayData = computed(() => {
             </div>
 
             <div class="flex flex-col gap-2">
-              <h3 class="text-2xl font-semibold">Kegiatan Mendatang</h3>
+              <h3 class="text-2xl font-semibold">
+                Kegiatan Berlangsung/Mendatang
+              </h3>
               <ul class="flex flex-col">
                 <li
-                  v-for="event in upcomingEvents"
+                  v-for="event in upcomingOrOngoingEvents"
                   :key="event.id"
-                  class="bg-white shadow-sm rounded-md mb-2 px-4 py-2"
+                  :class="[
+                    'border rounded-md mb-2 px-4 py-2 bg-white',
+                    event.status === 'ongoing' && 'border-blue-600',
+                  ]"
                 >
-                  <h4 class="font-medium">{{ event.title }}</h4>
-                  <p class="text-gray-600 text-sm">
-                    {{ format(new Date(event.event_date), 'd MMM y') }}
-                    {{ event.event_time.split(':').slice(0, 2).join(':') }}
+                  <h4
+                    :class="[
+                      'font-medium',
+                      event.status === 'ongoing' && 'text-blue-800',
+                    ]"
+                  >
+                    {{ event.title }}
+                  </h4>
+                  <p
+                    :class="[
+                      'text-sm',
+                      event.status === 'ongoing'
+                        ? 'text-blue-900'
+                        : 'text-gray-600',
+                    ]"
+                  >
+                    {{ formatEventDate(event) }}
                   </p>
                 </li>
 
                 <li
-                  v-if="upcomingEvents.length === 0"
+                  v-if="upcomingOrOngoingEvents.length === 0"
                   class="bg-white border border-gray-100 text-center rounded-md mb-2 px-4 py-8"
                 >
                   <p>Tidak terdapat kegiatan mendatang.</p>

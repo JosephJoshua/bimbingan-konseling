@@ -12,8 +12,7 @@ import {
 } from '@heroicons/vue/24/solid';
 import { PaginatedResult } from '@/types/paginated-result';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { endOfDay, format, formatDate, startOfDay } from 'date-fns';
-import { id } from 'date-fns/locale/id';
+import { format } from 'date-fns';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
 import { Event as AppEvent } from '@/types/event';
@@ -23,14 +22,13 @@ import ellipsis from '@/utils/ellipsis';
 import BaseSelect from '@/Components/BaseSelect.vue';
 import VueTailwindDatePicker from 'vue-tailwind-datepicker';
 import { computed } from 'vue';
-import { DeprecationTypes } from 'vue';
 
 const props = defineProps<{
-  data: PaginatedResult<AppEvent & { status: 'upcoming' | 'done' }>;
+  data: PaginatedResult<AppEvent & { status: 'upcoming' | 'done' | 'ongoing' }>;
   search: string;
   sort_by: string;
   sort_direction: 'asc' | 'desc';
-  status_filter: 'all' | 'upcoming' | 'done';
+  status_filter: 'all' | 'upcoming' | 'done' | 'ongoing';
   start_date?: string;
   end_date?: string;
 }>();
@@ -40,11 +38,11 @@ const dateFilters = computed(() => {
     startDate:
       props.start_date == null
         ? ''
-        : formatDate(new Date(props.start_date), 'dd MMM yyyy'),
+        : format(new Date(props.start_date), 'dd MMM yyyy'),
     endDate:
       props.end_date == null
         ? ''
-        : formatDate(new Date(props.end_date), 'dd MMM yyyy'),
+        : format(new Date(props.end_date), 'dd MMM yyyy'),
   };
 });
 
@@ -103,11 +101,13 @@ const handleSearch = (query: string) => {
   });
 };
 
-const handleFilterStatus = (filter: string) => {
+const handleFilterStatus = (filter: string | number | null) => {
+  if (filter === null) return;
+
   const newUrl = new URL(decodeURIComponent(window.location.href));
 
   newUrl.searchParams.set('page', '1');
-  newUrl.searchParams.set('status', filter);
+  newUrl.searchParams.set('status', String(filter));
 
   router.get(newUrl, undefined, {
     only: ['data', 'status_filter'],
@@ -139,6 +139,8 @@ const handleDelete = (id: number) => {
     onSuccess: () => {
       router.reload({ only: ['data'] });
     },
+    preserveScroll: true,
+    preserveState: true,
   });
 };
 </script>
@@ -194,7 +196,8 @@ const handleDelete = (id: number) => {
               >
                 <option value="all">Semua</option>
                 <option value="upcoming">Mendatang</option>
-                <option value="done">Sudah Selesai</option>
+                <option value="ongoing">Sedang berlangsung</option>
+                <option value="done">Selesai</option>
               </BaseSelect>
 
               <VueTailwindDatePicker
@@ -232,22 +235,22 @@ const handleDelete = (id: number) => {
                   <th scope="col" class="px-6 py-3">
                     <div
                       class="whitespace-nowrap flex justify-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
-                      @click="() => handleSort('event_date')"
+                      @click="() => handleSort('start_date')"
                     >
-                      Tanggal Kegiatan
+                      Kegiatan Dimulai
 
-                      <component :is="getSortIcon('event_date')" class="w-4" />
+                      <component :is="getSortIcon('start_date')" class="w-4" />
                     </div>
                   </th>
 
                   <th scope="col" class="px-6 py-3">
                     <div
                       class="whitespace-nowrap flex justify-center text-center items-center gap-1 cursor-pointer transition-all duration-200 hover:brightness-125"
-                      @click="() => handleSort('event_time')"
+                      @click="() => handleSort('end_date')"
                     >
-                      Waktu Kegiatan
+                      Kegiatan Selesai
 
-                      <component :is="getSortIcon('event_time')" class="w-4" />
+                      <component :is="getSortIcon('end_date')" class="w-4" />
                     </div>
                   </th>
 
@@ -288,11 +291,11 @@ const handleDelete = (id: number) => {
                   class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td class="px-6 py-4 text-center">
-                    {{ format(event.event_date, 'd MMMM y') }}
+                    {{ format(new Date(event.start_date), 'd MMMM y HH:mm') }}
                   </td>
 
                   <td class="px-6 py-4 text-center">
-                    {{ event.event_time }}
+                    {{ format(new Date(event.end_date), 'd MMMM y HH:mm') }}
                   </td>
 
                   <th
@@ -314,11 +317,17 @@ const handleDelete = (id: number) => {
                           event.status === 'done',
                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-yellow-100':
                           event.status === 'upcoming',
+                        'bg-blue-100 text-blue-800 dark:bg-blue-500 dark:text-blue-100':
+                          event.status === 'ongoing',
                       }"
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
                       {{
-                        event.status === 'done' ? 'Sudah Selesai' : 'Mendatang'
+                        event.status === 'done'
+                          ? 'Selesai'
+                          : event.status === 'upcoming'
+                          ? 'Mendatang'
+                          : 'Sedang berlangsung'
                       }}
                     </span>
                   </td>

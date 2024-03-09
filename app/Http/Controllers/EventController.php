@@ -17,13 +17,13 @@ class EventController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'sort_by' => ['nullable', 'sometimes', 'string', Rule::in(['title', 'event_date'])],
+            'sort_by' => ['nullable', 'sometimes', 'string', Rule::in(['title', 'start_date', 'end_date'])],
             'sort_direction' => ['nullable', 'sometimes', 'string', Rule::in(['asc', 'desc'])],
             'search' => ['nullable', 'sometimes', 'string'],
-            'status' => ['nullable', 'sometimes', 'string', Rule::in(['all', 'upcoming', 'done'])],
+            'status' => ['nullable', 'sometimes', 'string', Rule::in(['all',  'ongoing', 'upcoming', 'done'])],
         ]);
 
-        $sortBy = $request->query('sort_by') ?? 'event_date';
+        $sortBy = $request->query('sort_by') ?? 'start_date';
         $sortDirection = $request->query('sort_direction') ?? 'desc';
         $statusFilter = $request->query('status') ?? 'all';
         $startDate = $request->query('start_date') ? Carbon::parse($request->query('start_date'))->startOfDay() : null;
@@ -36,20 +36,30 @@ class EventController extends Controller
                     $query->where(DB::raw('LOWER(title)'), 'LIKE', '%' . $search . '%');
                 })
                     ->when($statusFilter === 'upcoming', function ($query) {
-                        $query->where(DB::raw('TIMESTAMP(event_date, event_time)'), '>=', DB::raw('CURRENT_TIMESTAMP()'));
+                        $query->where('start_date', '>=', DB::raw('CURRENT_TIMESTAMP()'));
+                    })
+                    ->when($statusFilter === 'ongoing', function ($query) {
+                        $query->where('start_date', '<=', DB::raw('CURRENT_TIMESTAMP()'))
+                            ->where('end_date', '>=', DB::raw('CURRENT_TIMESTAMP()'));
                     })
                     ->when($statusFilter === 'done', function ($query) {
-                        $query->where(DB::raw('TIMESTAMP(event_date, event_time)'), '<', DB::raw('CURRENT_TIMESTAMP()'));
+                        $query->where('end_date', '<', DB::raw('CURRENT_TIMESTAMP()'));
                     })
                     ->when($startDate, function ($query) use ($startDate) {
-                        $query->where('event_date', '>=', $startDate);
+                        // The event must not end before the filter start date.
+                        $query->whereNot('end_date', '<', $startDate);
                     })
                     ->when($endDate, function ($query) use ($endDate) {
-                        $query->where('event_date', '<=', $endDate);
+                        // The event must not start after the filter end date.
+                        $query->whereNot('start_date', '>', $endDate);
                     })
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()
-                    ->select('*', DB::raw('IF(TIMESTAMP(event_date, event_time) >= CURRENT_TIMESTAMP(), "upcoming", "done") as status'))
+                    ->select('*', DB::raw('CASE
+                        WHEN start_date >= CURRENT_TIMESTAMP() THEN "upcoming"
+                        WHEN start_date <= CURRENT_TIMESTAMP() AND end_date >= CURRENT_TIMESTAMP() THEN "ongoing"
+                        WHEN end_date < CURRENT_TIMESTAMP() THEN "done"
+                    END as status'))
                     ->paginate(10)
                     ->appends(['sort_by' => $sortBy, 'sort_direction' => $sortDirection, 'search' => $search, 'status' => $statusFilter, 'start_date' => $startDate, 'end_date' => $endDate]);
             },
@@ -78,15 +88,17 @@ class EventController extends Controller
         $request->validate([
             'title' => ['required', 'string'],
             'description' => ['required'],
-            'event_date' => ['required', 'date'],
-            'event_time' => ['required', 'date_format:H:i'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $eventDate = Carbon::parse($request->get('event_date'));
+        $startDate = Carbon::parse($request->get('start_date'));
+        $endDate = Carbon::parse($request->get('end_date'));
 
         $event = Event::create([
             ...$request->all(),
-            'event_date' => $eventDate,
+            'start_date' => $startDate->setTimezone('UTC'),
+            'end_date' => $endDate->setTimezone('UTC'),
         ]);
 
         return redirect()->route('events.show', ['event' => $event->id]);
@@ -97,8 +109,16 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
+        $data = Event::where('id', '=', $event->id)
+            ->select('*', DB::raw('CASE
+                    WHEN start_date >= CURRENT_TIMESTAMP() THEN "upcoming"
+                    WHEN start_date <= CURRENT_TIMESTAMP() AND end_date >= CURRENT_TIMESTAMP() THEN "ongoing"
+                    WHEN end_date < CURRENT_TIMESTAMP() THEN "done"
+                END as status'))
+            ->first();
+
         return Inertia::render('Event/Show', [
-            'data' => $event,
+            'data' => $data,
         ]);
     }
 
@@ -108,7 +128,11 @@ class EventController extends Controller
     public function edit(Request $request, Event $event)
     {
         return Inertia::render('Event/Edit', [
-            'data' => $event,
+            'data' => [
+                ...$event->toArray(),
+                'start_date' => $event->start_date->getTimestampMs(),
+                'end_date' => $event->end_date->getTimestampMs(),
+            ],
         ]);
     }
 
@@ -120,15 +144,17 @@ class EventController extends Controller
         $request->validate([
             'title' => ['required', 'string'],
             'description' => ['required'],
-            'event_date' => ['required', 'date'],
-            'event_time' => ['required', 'date_format:H:i'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $eventDate = Carbon::parse($request->get('event_date'));
+        $startDate = Carbon::parse($request->get('start_date'));
+        $endDate = Carbon::parse($request->get('end_date'));
 
         $event->update([
             ...$request->all(),
-            'event_date' => $eventDate,
+            'start_date' => $startDate->setTimezone('UTC'),
+            'end_date' => $endDate->setTimezone('UTC'),
         ]);
 
         return redirect()->route('events.show', ['event' => $event->id]);

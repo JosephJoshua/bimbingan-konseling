@@ -2,13 +2,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { CalendarIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link } from '@inertiajs/vue3';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale/id';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { Event } from '@/types/event';
+import formatEventDate from '@/utils/format-event-date';
 
 defineProps<{
-  data: Event;
+  data: Event & {
+    status: 'done' | 'upcoming' | 'ongoing';
+  };
 }>();
 </script>
 
@@ -39,11 +40,29 @@ defineProps<{
             <div class="flex items-center gap-2">
               <CalendarIcon class="w-5 h-5" />
               <span class="text-gray-600">
-                {{ format(data.event_date, 'd MMMM y') }}
-                {{ ' ' }}
-                {{ data.event_time }}
+                {{ formatEventDate(data) }}
               </span>
             </div>
+
+            <span
+              :class="{
+                'bg-green-100 text-green-800 dark:bg-green-500 dark:text-green-100':
+                  data.status === 'done',
+                'bg-yellow-100 text-yellow-800 dark:bg-yellow-500 dark:text-yellow-100':
+                  data.status === 'upcoming',
+                'bg-blue-100 text-blue-800 dark:bg-blue-500 dark:text-blue-100':
+                  data.status === 'ongoing',
+              }"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            >
+              {{
+                data.status === 'done'
+                  ? 'Selesai'
+                  : data.status === 'upcoming'
+                  ? 'Mendatang'
+                  : 'Sedang berlangsung'
+              }}
+            </span>
           </div>
 
           <div class="font-medium tracking-wide mt-6 text-xl">Deskripsi</div>

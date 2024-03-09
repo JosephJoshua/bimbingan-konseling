@@ -4,11 +4,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { CalendarIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
+import { ArrowRightIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import Datepicker from 'flowbite-datepicker/Datepicker';
-import { ref } from 'vue';
-import { onMounted } from 'vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import BlotFormatter from 'quill-blot-formatter';
 import ImageCompress from 'quill-image-compress';
@@ -17,22 +14,32 @@ import ImageUploader from 'quill-image-uploader';
 import 'quill-paste-smart';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import 'quill-image-uploader/dist/quill.imageUploader.min.css';
-import { parseISO } from 'date-fns';
 import axios from 'axios';
+import { DatePicker } from 'v-calendar';
+import { ref } from 'vue';
+import { endOfMinute, startOfMinute } from 'date-fns';
 
-const form = useForm({
+const form = useForm<{
+  title: string;
+  description: string;
+  start_date: Date | null;
+  end_date: Date | null;
+}>({
   title: '',
   description: '',
-  event_date: '',
-  event_time: '',
+  start_date: null,
+  end_date: null,
 });
 
-const eventDateRef = ref<HTMLInputElement | null>(null);
+const dateRange = ref({
+  start: new Date(),
+  end: new Date(),
+});
 
 const submit = () => {
-  if (eventDateRef.value === null) return;
+  form.start_date = startOfMinute(dateRange.value.start);
+  form.end_date = endOfMinute(dateRange.value.end);
 
-  form.event_date = eventDateRef.value.value;
   form.post(route('events.store'));
 };
 
@@ -48,11 +55,6 @@ const handleUploadImage = async (file: File) => {
 
   return response.data as string;
 };
-
-onMounted(() => {
-  if (eventDateRef.value === null) return;
-  new Datepicker(eventDateRef.value).setDate(parseISO(form.event_date));
-});
 </script>
 
 <style>
@@ -103,38 +105,41 @@ onMounted(() => {
             <div class="mt-4">
               <InputLabel for="event_date" value="Tanggal Kegiatan" required />
 
-              <div class="relative w-full">
-                <div
-                  class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
-                >
-                  <CalendarIcon class="w-4 h-4" />
-                </div>
+              <DatePicker
+                v-model.range="dateRange"
+                mode="dateTime"
+                is24hr
+                is-required
+                class="mt-1 w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+                :time-accuracy="2"
+                :popover="{
+                  placement: 'bottom',
+                }"
+                :update-on-input="false"
+              >
+                <template #default="{ inputValue, inputEvents }">
+                  <div class="flex items-center gap-4">
+                    <TextInput
+                      class="flex-1"
+                      :value="inputValue.start"
+                      v-on="inputEvents.start"
+                    />
 
-                <input
-                  ref="eventDateRef"
-                  datepicker
-                  datepicker-autohide
-                  type="text"
-                  class="mt-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
-                  placeholder="Pilih tanggal"
-                />
+                    <ArrowRightIcon class="h-5" />
+
+                    <TextInput
+                      class="flex-1"
+                      :value="inputValue.end"
+                      v-on="inputEvents.end"
+                    />
+                  </div>
+                </template>
+              </DatePicker>
+
+              <div class="mt-2 flex flex-col gap-1">
+                <InputError :message="form.errors.start_date" />
+                <InputError :message="form.errors.end_date" />
               </div>
-
-              <InputError class="mt-2" :message="form.errors.event_date" />
-            </div>
-
-            <div class="mt-4">
-              <InputLabel for="event_time" value="Jam Kegiatan" required />
-
-              <TextInput
-                id="event_time"
-                v-model="form.event_time"
-                type="time"
-                class="mt-1 block w-full"
-                required
-              />
-
-              <InputError class="mt-2" :message="form.errors.event_time" />
             </div>
 
             <div class="mt-4">

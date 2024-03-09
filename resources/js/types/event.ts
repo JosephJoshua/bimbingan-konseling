@@ -2,6 +2,6 @@ export type Event = {
   id: number;
   title: string;
   description: string;
-  event_date: string;
-  event_time: string;
+  start_date: number;
+  end_date: number;
 };
