@@ -3,7 +3,7 @@ export type Consultation = {
   description: string;
   student_id: number;
   consultation_category_id: string;
-  consultation_date: string;
+  consultation_date: number;
 };
 
 export type WithConsultations<T> = T & {

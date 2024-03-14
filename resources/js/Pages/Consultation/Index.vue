@@ -16,7 +16,6 @@ import { format } from 'date-fns';
 import { Consultation } from '@/types/consultation';
 import { WithStudent } from '@/types/student';
 import { WithConsultationCategory } from '@/types/consultation-category';
-import { id } from 'date-fns/locale/id';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
 import extractContentFromHtml from '@/utils/extract-content-from-html';
@@ -214,7 +213,12 @@ const handleDelete = (id: number) => {
                   </td>
 
                   <th class="px-6 py-4 whitespace-nowrap">
-                    {{ format(consultation.consultation_date, 'd MMMM y') }}
+                    {{
+                      format(
+                        new Date(consultation.consultation_date),
+                        'd MMMM y',
+                      )
+                    }}
                   </th>
 
                   <td class="px-6 py-4">

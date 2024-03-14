@@ -9,7 +9,6 @@ export default {
     './storage/framework/views/*.php',
     './resources/views/**/*.blade.php',
     './resources/js/**/*.vue',
-    './node_modules/flowbite-datepicker/dist/**/*.js',
     './node_modules/vue-tailwind-datepicker/**/*.js',
   ],
 

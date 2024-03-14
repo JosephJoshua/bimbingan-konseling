@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import BaseSelect from '@/Components/BaseSelect.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { CalendarIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
+import { ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { GENDERS, GENDER_TRANSLATIONS } from '@/types/gender';
 import { RELIGIONS, RELIGION_TRANSLATIONS } from '@/types/religion';
@@ -13,24 +13,42 @@ import {
   STATUSES_IN_FAMILY,
   STATUS_IN_FAMILY_TRANSLATIONS,
 } from '@/types/status-in-family';
-import Datepicker from 'flowbite-datepicker/Datepicker';
-import { ref } from 'vue';
-import { onMounted } from 'vue';
 import { Student } from '@/types/student';
-import { parseISO } from 'date-fns';
+import { DatePicker } from 'v-calendar';
 
 const props = defineProps<{
   data: Student;
 }>();
 
-const form = useForm({
+const form = useForm<{
+  nisn: string;
+  nis: string;
+  nik: string;
+  gender: string;
+  religion: string;
+  full_name: string;
+  birth_date: Date | null;
+  birth_place: string;
+  status_in_family: string;
+  child_order: number;
+  full_address: string;
+  origin_school: string;
+  phone_number: string;
+  email: string;
+  father_name: string;
+  father_phone_number: string;
+  mother_name: string;
+  mother_phone_number: string;
+  guardian_name: string;
+  guardian_phone_number: string;
+}>({
   nisn: props.data.nisn,
   nis: props.data.nis,
   nik: props.data.nik || '',
   gender: props.data.gender || '',
   religion: props.data.religion || '',
   full_name: props.data.full_name || '',
-  birth_date: props.data.birth_date || '',
+  birth_date: new Date(props.data.birth_date),
   birth_place: props.data.birth_place || '',
   status_in_family: props.data.status_in_family || '',
   child_order: props.data.child_order || 1,
@@ -46,19 +64,9 @@ const form = useForm({
   guardian_phone_number: props.data.guardian_phone_number || '',
 });
 
-const birthDateRef = ref<HTMLInputElement | null>(null);
-
 const submit = () => {
-  if (birthDateRef.value === null) return;
-
-  form.birth_date = birthDateRef.value.value;
   form.put(route('students.update', { student: props.data.id }));
 };
-
-onMounted(() => {
-  if (birthDateRef.value === null) return;
-  new Datepicker(birthDateRef.value).setDate(parseISO(form.birth_date));
-});
 </script>
 
 <template>
@@ -224,22 +232,20 @@ onMounted(() => {
             <div class="mt-4">
               <InputLabel for="birth_date" value="Tanggal Lahir" required />
 
-              <div class="relative w-full">
-                <div
-                  class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
-                >
-                  <CalendarIcon class="w-4 h-4" />
-                </div>
-
-                <input
-                  ref="birthDateRef"
-                  datepicker
-                  datepicker-autohide
-                  type="text"
-                  class="mt-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
-                  placeholder="Pilih tanggal"
-                />
-              </div>
+              <DatePicker
+                v-model="form.birth_date"
+                is-required
+                locale="id"
+                :update-on-input="false"
+              >
+                <template #default="{ inputValue, inputEvents }">
+                  <TextInput
+                    class="w-full mt-1"
+                    :value="inputValue"
+                    v-on="inputEvents"
+                  />
+                </template>
+              </DatePicker>
 
               <InputError class="mt-2" :message="form.errors.birth_date" />
             </div>

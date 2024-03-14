@@ -75,7 +75,7 @@ class ConsultationController extends Controller
 
         $consultation = $student->consultations()->create([
             ...$request->all(),
-            'consultation_date' => $consultationDate,
+            'consultation_date' => $consultationDate->startOfDay()->shiftTimezone('UTC'),
         ]);
 
         return redirect()->route('consultations.show', ['consultation' => $consultation->id]);
@@ -87,7 +87,10 @@ class ConsultationController extends Controller
     public function show(Consultation $consultation)
     {
         return Inertia::render('Consultation/Show', [
-            'consultation' => $consultation->load('consultationCategory', 'student'),
+            'consultation' => [
+                ...$consultation->load('consultationCategory', 'student')->toArray(),
+                'consultation_date' => Carbon::parse($consultation->consultation_date)->getTimestampMs(),
+            ],
             'index' => Consultation::where('student_id', $consultation->student_id)
                 ->where('consultation_date', '<', $consultation->consultation_date)
                 ->latest()
@@ -101,7 +104,10 @@ class ConsultationController extends Controller
     public function edit(Consultation $consultation)
     {
         return Inertia::render('Consultation/Edit', [
-            'data' => $consultation->load('consultationCategory', 'student'),
+            'data' => [
+                ...$consultation->load('consultationCategory', 'student')->toArray(),
+                'consultation_date' => Carbon::parse($consultation->consultation_date)->getTimestampMs(),
+            ],
             'categories' => fn () => ConsultationCategory::orderBy('name')->get(),
             'index' => Consultation::where('student_id', $consultation->student_id)
                 ->where('consultation_date', '<', $consultation->consultation_date)
@@ -125,7 +131,7 @@ class ConsultationController extends Controller
 
         $consultation->update([
             ...$request->all(),
-            'consultation_date' => $consultationDate,
+            'consultation_date' => $consultationDate->startOfDay()->shiftTimezone('UTC'),
         ]);
 
         return redirect()->route('consultations.show', ['consultation' => $consultation->id]);

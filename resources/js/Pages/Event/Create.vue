@@ -11,7 +11,6 @@ import BlotFormatter from 'quill-blot-formatter';
 import ImageCompress from 'quill-image-compress';
 import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';
-import 'quill-paste-smart';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import 'quill-image-uploader/dist/quill.imageUploader.min.css';
 import axios from 'axios';
@@ -111,6 +110,7 @@ const handleUploadImage = async (file: File) => {
                 is24hr
                 is-required
                 class="mt-1 w-full border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+                locale="id"
                 :time-accuracy="2"
                 :popover="{
                   placement: 'bottom',

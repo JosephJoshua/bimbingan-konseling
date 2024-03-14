@@ -10,7 +10,7 @@ export type Student = {
   gender: Gender;
   religion: Religion;
   full_name: string;
-  birth_date: string;
+  birth_date: number;
   birth_place: string;
   status_in_family: StatusInFamily;
   child_order: number;

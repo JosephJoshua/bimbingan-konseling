@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import BaseSelect from '@/Components/BaseSelect.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { CalendarIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
+import { ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { GENDERS, GENDER_TRANSLATIONS } from '@/types/gender';
 import { RELIGIONS, RELIGION_TRANSLATIONS } from '@/types/religion';
@@ -13,18 +13,37 @@ import {
   STATUSES_IN_FAMILY,
   STATUS_IN_FAMILY_TRANSLATIONS,
 } from '@/types/status-in-family';
-import Datepicker from 'flowbite-datepicker/Datepicker';
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { DatePicker } from 'v-calendar';
 
-const form = useForm({
+const form = useForm<{
+  nisn: string;
+  nis: string;
+  nik: string;
+  gender: string;
+  religion: string;
+  full_name: string;
+  birth_date: Date | null;
+  birth_place: string;
+  status_in_family: string;
+  child_order: number;
+  full_address: string;
+  origin_school: string;
+  phone_number: string;
+  email: string;
+  father_name: string;
+  father_phone_number: string;
+  mother_name: string;
+  mother_phone_number: string;
+  guardian_name: string;
+  guardian_phone_number: string;
+}>({
   nisn: '',
   nis: '',
   nik: '',
   gender: '',
   religion: '',
   full_name: '',
-  birth_date: '',
+  birth_date: null,
   birth_place: '',
   status_in_family: '',
   child_order: 1,
@@ -40,19 +59,9 @@ const form = useForm({
   guardian_phone_number: '',
 });
 
-const birthDateRef = ref<HTMLInputElement | null>(null);
-
 const submit = () => {
-  if (birthDateRef.value === null) return;
-
-  form.birth_date = birthDateRef.value.value;
   form.post(route('students.store'));
 };
-
-onMounted(() => {
-  if (birthDateRef.value === null) return;
-  new Datepicker(birthDateRef.value);
-});
 </script>
 
 <template>
@@ -218,22 +227,20 @@ onMounted(() => {
             <div class="mt-4">
               <InputLabel for="birth_date" value="Tanggal Lahir" required />
 
-              <div class="relative w-full">
-                <div
-                  class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
-                >
-                  <CalendarIcon class="w-4 h-4" />
-                </div>
-
-                <input
-                  ref="birthDateRef"
-                  datepicker
-                  datepicker-autohide
-                  type="text"
-                  class="mt-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
-                  placeholder="Pilih tanggal"
-                />
-              </div>
+              <DatePicker
+                v-model="form.birth_date"
+                is-required
+                locale="id"
+                :update-on-input="false"
+              >
+                <template #default="{ inputValue, inputEvents }">
+                  <TextInput
+                    class="w-full mt-1"
+                    :value="inputValue"
+                    v-on="inputEvents"
+                  />
+                </template>
+              </DatePicker>
 
               <InputError class="mt-2" :message="form.errors.birth_date" />
             </div>

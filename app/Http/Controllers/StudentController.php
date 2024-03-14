@@ -89,7 +89,7 @@ class StudentController extends Controller
 
         Student::create([
             ...$request->all(),
-            'birth_date' => $birth_date,
+            'birth_date' => $birth_date->startOfDay()->shiftTimezone('UTC'),
         ]);
 
         return redirect()->route('students.index');
@@ -111,7 +111,7 @@ class StudentController extends Controller
         return Inertia::render('Student/Edit', [
             'data' => [
                 ...$student->toArray(),
-                'birth_date' => Carbon::parse($student->birth_date)->format('c'),
+                'birth_date' => Carbon::parse($student->birth_date)->getTimestampMs(),
             ],
         ]);
     }
@@ -148,7 +148,7 @@ class StudentController extends Controller
 
         $student->update([
             ...$request->all(),
-            'birth_date' => $birth_date,
+            'birth_date' => $birth_date->startOfDay()->shiftTimezone('UTC'),
         ]);
 
         return redirect()->route('students.index');
