@@ -21,14 +21,20 @@ class EventController extends Controller
             'sort_direction' => ['nullable', 'sometimes', 'string', Rule::in(['asc', 'desc'])],
             'search' => ['nullable', 'sometimes', 'string'],
             'status' => ['nullable', 'sometimes', 'string', Rule::in(['all',  'ongoing', 'upcoming', 'done'])],
+            'start_date' => ['nullable', 'sometimes', 'numeric'],
+            'end_date' => ['nullable', 'sometimes', 'numeric', 'gte:end_date'],
         ]);
+
+        // dd($request->query('end_date'), Carbon::createFromTimestampUTC($request->query('end_date')));
 
         $sortBy = $request->query('sort_by') ?? 'start_date';
         $sortDirection = $request->query('sort_direction') ?? 'desc';
         $statusFilter = $request->query('status') ?? 'all';
-        $startDate = $request->query('start_date') ? Carbon::parse($request->query('start_date'))->startOfDay() : null;
-        $endDate = $request->query('end_date') ? Carbon::parse($request->query('end_date'))->endOfDay() : null;
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
         $search = strtolower(trim($request->query('search')));
+
+        // dd(Carbon::createFromTimestampUTC($request->query('end_date')));
 
         return Inertia::render('Event/Index', [
             'data' => function () use ($sortBy, $sortDirection, $search, $statusFilter, $startDate, $endDate) {
@@ -45,13 +51,12 @@ class EventController extends Controller
                     ->when($statusFilter === 'done', function ($query) {
                         $query->where('end_date', '<', DB::raw('CURRENT_TIMESTAMP()'));
                     })
-                    ->when($startDate, function ($query) use ($startDate) {
+                    ->when($startDate != null && $endDate != null, function ($query) use ($startDate, $endDate) {
                         // The event must not end before the filter start date.
-                        $query->whereNot('end_date', '<', $startDate);
-                    })
-                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereNot('end_date', '<', Carbon::createFromTimestamp($startDate)->startOfDay());
+
                         // The event must not start after the filter end date.
-                        $query->whereNot('start_date', '>', $endDate);
+                        $query->whereNot('start_date', '>', Carbon::createFromTimestamp($endDate)->endOfDay());
                     })
                     ->orderBy($sortBy, $sortDirection)
                     ->latest()

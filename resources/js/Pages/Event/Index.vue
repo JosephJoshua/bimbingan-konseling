@@ -9,10 +9,11 @@ import {
   PencilIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ArrowRightIcon,
 } from '@heroicons/vue/24/solid';
 import { PaginatedResult } from '@/types/paginated-result';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { format } from 'date-fns';
+import { format, getUnixTime } from 'date-fns';
 import ActionButton from '@/Components/ActionButton.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
 import { Event as AppEvent } from '@/types/event';
@@ -20,8 +21,9 @@ import extractContentFromHtml from '@/utils/extract-content-from-html';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import ellipsis from '@/utils/ellipsis';
 import BaseSelect from '@/Components/BaseSelect.vue';
-import VueTailwindDatePicker from 'vue-tailwind-datepicker';
 import { computed } from 'vue';
+import { DatePicker } from 'v-calendar';
+import TextInput from '@/Components/TextInput.vue';
 
 const props = defineProps<{
   data: PaginatedResult<AppEvent & { status: 'upcoming' | 'done' | 'ongoing' }>;
@@ -32,19 +34,6 @@ const props = defineProps<{
   start_date?: string;
   end_date?: string;
 }>();
-
-const dateFilters = computed(() => {
-  return {
-    startDate:
-      props.start_date == null
-        ? ''
-        : format(new Date(props.start_date), 'dd MMM yyyy'),
-    endDate:
-      props.end_date == null
-        ? ''
-        : format(new Date(props.end_date), 'dd MMM yyyy'),
-  };
-});
 
 const deleteForm = useForm({});
 
@@ -117,14 +106,14 @@ const handleFilterStatus = (filter: string | number | null) => {
   });
 };
 
-const handleFilterDate = (dates: { startDate: string; endDate: string }) => {
-  const { startDate, endDate } = dates;
+const handleFilterDate = (dates: { start: Date | null; end: Date | null }) => {
+  const { start, end } = dates;
 
   const newUrl = new URL(decodeURIComponent(window.location.href));
 
   newUrl.searchParams.set('page', '1');
-  newUrl.searchParams.set('start_date', startDate);
-  newUrl.searchParams.set('end_date', endDate);
+  start && newUrl.searchParams.set('start_date', getUnixTime(start).toString());
+  end && newUrl.searchParams.set('end_date', getUnixTime(end).toString());
 
   router.get(newUrl, undefined, {
     only: ['data', 'start_date', 'end_date'],
@@ -143,6 +132,21 @@ const handleDelete = (id: number) => {
     preserveState: true,
   });
 };
+
+const dateFilters = computed({
+  get() {
+    if (props.start_date == null || props.end_date == null) return null;
+
+    return {
+      start: new Date(Number(props.start_date) * 1000),
+      end: new Date(Number(props.end_date) * 1000),
+    };
+  },
+  set(value) {
+    if (value == null) return;
+    handleFilterDate(value);
+  },
+});
 </script>
 
 <template>
@@ -200,29 +204,33 @@ const handleDelete = (id: number) => {
                 <option value="done">Selesai</option>
               </BaseSelect>
 
-              <VueTailwindDatePicker
-                placeholder="Pilih tanggal"
-                separator=" - "
-                :options="{
-                  shortcuts: {
-                    today: 'Hari ini',
-                    yesterday: 'Kemarin',
-                    past: (period) => `${period} hari terakhir`,
-                    currentMonth: 'Bulan ini',
-                    pastMonth: 'Bulan lalu',
-                  },
-                  footer: {
-                    apply: 'Terapkan',
-                    cancel: 'Batal',
-                  },
+              <DatePicker
+                v-model.range="dateFilters"
+                is-required
+                locale="id"
+                :popover="{
+                  placement: 'bottom',
                 }"
-                :formatter="{
-                  date: 'DD MMM YYYY',
-                  month: 'MMM',
-                }"
-                :model-value="dateFilters"
-                @update:model-value="handleFilterDate"
-              />
+                :update-on-input="false"
+              >
+                <template #default="{ inputValue, inputEvents }">
+                  <div class="flex flex-1 items-center gap-4">
+                    <TextInput
+                      class="flex-1"
+                      :value="inputValue.start"
+                      v-on="inputEvents.start"
+                    />
+
+                    <ArrowRightIcon class="h-5" />
+
+                    <TextInput
+                      class="flex-1"
+                      :value="inputValue.end"
+                      v-on="inputEvents.end"
+                    />
+                  </div>
+                </template>
+              </DatePicker>
             </div>
 
             <table

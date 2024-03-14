@@ -8,7 +8,6 @@ import { ArrowRightIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { QuillEditor } from '@vueup/vue-quill';
-import BlotFormatter from 'quill-blot-formatter';
 import ImageCompress from 'quill-image-compress';
 import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';

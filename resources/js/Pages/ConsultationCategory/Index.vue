@@ -96,18 +96,6 @@ const handleDelete = (id: number) => {
                     <div class="flex justify-end items-center gap-2">
                       <Link
                         :href="
-                          route('consultation-categories.show', {
-                            consultation_category: category.id,
-                          })
-                        "
-                      >
-                        <ActionButton title="Lihat">
-                          <EyeIcon class="w-4 h-4 text-blue-500" />
-                        </ActionButton>
-                      </Link>
-
-                      <Link
-                        :href="
                           route('consultation-categories.edit', {
                             consultation_category: category.id,
                           })

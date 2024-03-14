@@ -7,7 +7,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { ArrowRightIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { QuillEditor } from '@vueup/vue-quill';
-import BlotFormatter from 'quill-blot-formatter';
 import ImageCompress from 'quill-image-compress';
 import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';
@@ -149,10 +148,6 @@ const handleUploadImage = async (file: File) => {
                 v-model:content="form.description"
                 content-type="html"
                 :modules="[
-                  {
-                    name: 'blotFormatter',
-                    module: BlotFormatter,
-                  },
                   {
                     name: 'imageCompress',
                     module: ImageCompress,

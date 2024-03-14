@@ -24,7 +24,6 @@
     "eslint-plugin-vue": "^9.20.1",
     "laravel-vite-plugin": "^1.0.0",
     "postcss": "^8.4.31",
-    "quill-blot-formatter": "^1.0.5",
     "quill-emoji": "^0.2.0",
     "quill-image-compress": "^1.2.32",
     "quill-image-drop-module": "^1.0.3",

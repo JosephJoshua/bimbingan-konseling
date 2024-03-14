@@ -10,7 +10,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Student } from '@/types/student';
 import { ConsultationCategory } from '@/types/consultation-category';
 import { QuillEditor } from '@vueup/vue-quill';
-import BlotFormatter from 'quill-blot-formatter';
 import ImageCompress from 'quill-image-compress';
 import MagicUrl from 'quill-magic-url';
 import ImageUploader from 'quill-image-uploader';
